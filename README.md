@@ -122,6 +122,13 @@ MIT License (or another open-source license of your choice)
 
 ---
 
+### Development Environment
+
+STM32CubeIDE 1.19.0
+NUCLEO-F446RE
+
+---
+
 ## 日本語
 
 ### 概要
@@ -242,3 +249,10 @@ MIT ライセンス（または任意のオープンソースライセンス）
 
 このクラスは、STM32 の UART 通信をより柔軟かつ安全に扱うための軽量ライブラリです。
 割り込みによる処理分離で、リアルタイムタスクと UART 通信を両立させることが可能です。
+
+---
+
+### 開発環境
+
+STM32CubeIDE 1.19.0
+NUCLEO-F446RE

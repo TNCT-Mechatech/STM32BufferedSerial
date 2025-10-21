@@ -52,7 +52,6 @@
 #ifndef STM32_BUFFERED_SERIAL_HPP
 #define STM32_BUFFERED_SERIAL_HPP
 
-#include "main.h"
 #include "stm32f4xx_hal.h"
 #include <cstdint>
 

@@ -161,41 +161,48 @@ int STM32BufferedSerial::pop()
 
 void STM32BufferedSerial::registerInstance(UART_HandleTypeDef* huart, STM32BufferedSerial* instance)
 {
-    if (huart->Instance == USART1) instance_table_[0] = instance;
-    else if (huart->Instance == USART2) instance_table_[1] = instance;
-    else if (huart->Instance == USART3) instance_table_[2] = instance;
-
+    if (huart == nullptr) return;
+#if defined(USART1)
+    if (huart->Instance == USART1) { instance_table_[0] = instance; return; }
+#endif
+#if defined(USART2)
+    if (huart->Instance == USART2) { instance_table_[1] = instance; return; }
+#endif
+#if defined(USART3)
+    if (huart->Instance == USART3) { instance_table_[2] = instance; return; }
+#endif
 #if defined(UART4)
-    else if (huart->Instance == UART4) instance_table_[3] = instance;
+    if (huart->Instance == UART4) { instance_table_[3] = instance; return; }
 #endif
-
 #if defined(UART5)
-    else if (huart->Instance == UART5) instance_table_[4] = instance;
+    if (huart->Instance == UART5) { instance_table_[4] = instance; return; }
 #endif
-
-#if defined(UART6)
-    else if (huart->Instance == USART6) instance_table_[5] = instance;
+#if defined(USART6)
+    if (huart->Instance == USART6) { instance_table_[5] = instance; return; }
 #endif
 }
 
 STM32BufferedSerial* STM32BufferedSerial::fromHandle(UART_HandleTypeDef* huart)
 {
+    if (huart == nullptr) return nullptr;
+#if defined(USART1)
     if (huart->Instance == USART1) return instance_table_[0];
-    else if (huart->Instance == USART2) return instance_table_[1];
-    else if (huart->Instance == USART3) return instance_table_[2];
-
-#if defined(UART4)
-    else if (huart->Instance == UART4) return instance_table_[3];
 #endif
-
-#if defined(UART4)
-    else if (huart->Instance == UART5) return instance_table_[4];
+#if defined(USART2)
+    if (huart->Instance == USART2) return instance_table_[1];
 #endif
-
-#if defined(UART4)
-    else if (huart->Instance == USART6) return instance_table_[5];
+#if defined(USART3)
+    if (huart->Instance == USART3) return instance_table_[2];
 #endif
-
+#if defined(UART4)
+    if (huart->Instance == UART4) return instance_table_[3];
+#endif
+#if defined(UART5)
+    if (huart->Instance == UART5) return instance_table_[4];
+#endif
+#if defined(USART6)
+    if (huart->Instance == USART6) return instance_table_[5];
+#endif
     return nullptr;
 }
 

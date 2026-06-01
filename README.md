@@ -33,6 +33,15 @@ Multiple UART instances are supported.
 
 ---
 
+### Supported STM32 Series
+
+- STM32F3 series
+- STM32F4 series
+
+The library automatically includes `stm32f3xx_hal.h` or `stm32f4xx_hal.h` when available.
+
+---
+
 ### 💡 Example
 
 ```cpp
@@ -111,7 +120,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
    ```
 3. Ensure the following HAL headers are available:
 
-   * `stm32f4xx_hal.h`
+   * `stm32f3xx_hal.h` or `stm32f4xx_hal.h`
    * `usart.h`
    * `main.h`
 
@@ -156,6 +165,15 @@ NUCLEO-F446RE
 * HAL の busy 状態を安全に回避して自動で受信再開
 * `HAL_UART_Transmit_IT()` / `HAL_UART_Receive_IT()` の代わりとして利用可能
 * ブロッキング送信の `printf()` フォーマット出力に対応
+
+---
+
+### 対応 STM32 シリーズ
+
+* STM32F3 シリーズ
+* STM32F4 シリーズ
+
+利用可能な場合、`stm32f3xx_hal.h` または `stm32f4xx_hal.h` を自動でインクルードします。
 
 ---
 
@@ -242,7 +260,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
    ```
 3. 以下の HAL 関連ヘッダが含まれていることを確認：
 
-   * `stm32f4xx_hal.h`
+   * `stm32f3xx_hal.h` または `stm32f4xx_hal.h`
    * `usart.h`
    * `main.h`
 

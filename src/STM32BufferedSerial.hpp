@@ -52,7 +52,20 @@
 #ifndef STM32_BUFFERED_SERIAL_HPP
 #define STM32_BUFFERED_SERIAL_HPP
 
-#include "stm32f4xx_hal.h"
+#if defined(__has_include)
+#	if __has_include("stm32f4xx_hal.h")
+#		include "stm32f4xx_hal.h"
+#	elif __has_include("stm32f3xx_hal.h")
+#		include "stm32f3xx_hal.h"
+#	else
+#		error "STM32BufferedSerial requires stm32f3xx_hal.h or stm32f4xx_hal.h"
+#endif
+#else
+#	include "stm32f4xx_hal.h"
+#endif
+
+
+
 #include <cstdint>
 #include <cstdio>
 #include <cstdarg>

@@ -28,8 +28,8 @@ Multiple UART instances are supported.
 - Supports up to 6 UART instances  
 - Works with HAL UART callbacks (`HAL_UART_RxCpltCallback`, `HAL_UART_TxCpltCallback`)  
 - Automatically re-arms RX to handle HAL busy states  
-- Drop-in replacement for `HAL_UART_Transmit_IT()` / `HAL_UART_Receive_IT()`
-- Blocking `print()` / `printf()` output support
+- Can be used instead of `HAL_UART_Transmit_IT()` / `HAL_UART_Receive_IT()`
+- Blocking `printf()` formatted output support
 
 ---
 
@@ -70,7 +70,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
     if (auto inst = STM32BufferedSerial::fromHandle(huart))
         inst->handleTxComplete();
 }
-````
+```
 
 ---
 
@@ -84,13 +84,13 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
   ```cpp
   serial.write((uint8_t*)"Hello\r\n", 7);
   ```
-* Blocking string output:
+* Blocking formatted output:
 
   ```cpp
-  serial.print("Hello\r\n");
+  serial.printf("Hello\r\n");
   serial.printf("count=%d\r\n", count);
   ```
-  `print()` is not named `printf()`, and `begin()` is not required when using only blocking output.
+  Use `printf()`, not `print()`. `begin()` is not required when using only blocking output.
 * Reading data:
 
   ```cpp
@@ -103,7 +103,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
 
 ### ⚙️ Integration (STM32CubeIDE)
 
-1. Copy `STM32BufferedSerial.hpp` and `example.cpp` into your project (e.g., `Core/Inc` and `Core/Src`).
+1. Copy `src/STM32BufferedSerial.hpp` and `src/source/STM32BufferedSerial.cpp` into your project.
 2. Include the header in your source file:
 
    ```cpp
@@ -154,8 +154,8 @@ NUCLEO-F446RE
 * 最大 6 個の UART インスタンスに対応
 * HAL の UART コールバック関数（`HAL_UART_RxCpltCallback`, `HAL_UART_TxCpltCallback`）に対応
 * HAL の busy 状態を安全に回避して自動で受信再開
-* `HAL_UART_Transmit_IT()` / `HAL_UART_Receive_IT()` の代替として利用可能
-* ブロッキング送信の `print()` / `printf()` に対応
+* `HAL_UART_Transmit_IT()` / `HAL_UART_Receive_IT()` の代わりとして利用可能
+* ブロッキング送信の `printf()` フォーマット出力に対応
 
 ---
 
@@ -214,13 +214,13 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
   ```cpp
   serial.write((uint8_t*)"Hello\r\n", 7);
   ```
-* ブロッキング文字列送信例：
+* ブロッキングフォーマット送信例：
 
   ```cpp
-  serial.print("Hello\r\n");
+  serial.printf("Hello\r\n");
   serial.printf("count=%d\r\n", count);
   ```
-  `print()` は `printf()` という名前ではありません。ブロッキング送信だけを使う場合、`begin()` は不要です。
+  `print()` ではなく `printf()` を使います。ブロッキング送信だけを使う場合、`begin()` は不要です。
 * データ受信例：
 
   ```cpp
@@ -233,8 +233,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
 
 ### ⚙️ 統合手順（STM32CubeIDE）
 
-1. `STM32BufferedSerial.hpp` と `example.cpp` を
-   プロジェクト内（例：`Core/Inc`, `Core/Src`）にコピーします。
+1. `src/STM32BufferedSerial.hpp` と `src/source/STM32BufferedSerial.cpp` を
+   プロジェクト内にコピーします。
 2. 使用ファイル内でヘッダをインクルード：
 
    ```cpp

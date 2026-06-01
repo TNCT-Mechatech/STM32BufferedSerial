@@ -54,6 +54,8 @@
 
 #include "stm32f4xx_hal.h"
 #include <cstdint>
+#include <cstdio>
+#include <cstdarg>
 
 /**
  * @class STM32BufferedSerial
@@ -88,6 +90,24 @@ public:
      *  @return Number of bytes successfully queued for transmission.
      */
     int write(const uint8_t* data, uint16_t len);
+
+    /**
+     * @brief Send a formatted string over UART.
+     * @param format printf-style format string.
+     * @param ... Format arguments.
+     * @return Number of characters formatted, or negative on error.
+     * @note Blocking transmit. May return an error internally if UART is busy.
+     */
+    int printf(const char* format, ...);
+
+    /**
+     * @brief Send a formatted string over UART using va_list.
+     * @param format printf-style format string.
+     * @param args Format argument list.
+     * @return Number of characters formatted, or negative on error.
+     * @note Blocking transmit.
+     */
+    int vprintf(const char* format, va_list args);
 
     /** @brief Check if RX buffer contains data.
      *  @return true if data available.

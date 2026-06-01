@@ -29,6 +29,7 @@ Multiple UART instances are supported.
 - Works with HAL UART callbacks (`HAL_UART_RxCpltCallback`, `HAL_UART_TxCpltCallback`)  
 - Automatically re-arms RX to handle HAL busy states  
 - Drop-in replacement for `HAL_UART_Transmit_IT()` / `HAL_UART_Receive_IT()`
+- Blocking `print()` / `printf()` output support
 
 ---
 
@@ -82,6 +83,12 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
 
   ```cpp
   serial.write((uint8_t*)"Hello\r\n", 7);
+  ```
+* Blocking string output:
+
+  ```cpp
+  serial.print("Hello\r\n");
+  serial.printf("count=%d\r\n", count);
   ```
 * Reading data:
 
@@ -147,6 +154,7 @@ NUCLEO-F446RE
 * HAL の UART コールバック関数（`HAL_UART_RxCpltCallback`, `HAL_UART_TxCpltCallback`）に対応
 * HAL の busy 状態を安全に回避して自動で受信再開
 * `HAL_UART_Transmit_IT()` / `HAL_UART_Receive_IT()` の代替として利用可能
+* ブロッキング送信の `print()` / `printf()` に対応
 
 ---
 
@@ -204,6 +212,12 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
 
   ```cpp
   serial.write((uint8_t*)"Hello\r\n", 7);
+  ```
+* ブロッキング文字列送信例：
+
+  ```cpp
+  serial.print("Hello\r\n");
+  serial.printf("count=%d\r\n", count);
   ```
 * データ受信例：
 

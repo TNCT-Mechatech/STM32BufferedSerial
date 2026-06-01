@@ -107,6 +107,40 @@ int STM32BufferedSerial::write(const uint8_t* data, uint16_t len) {
     return written;
 }
 
+int STM32BufferedSerial::printf(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    int result = vprintf(format, args);
+    va_end(args);
+    return result;
+}
+
+int STM32BufferedSerial::vprintf(const char* format, va_list args)
+{
+    char buffer[128];
+
+    int len = vsnprintf(buffer, sizeof(buffer), format, args);
+
+    if (len < 0) {
+        return len;
+    }
+
+    uint16_t sendLen = static_cast<uint16_t>(
+        len < static_cast<int>(sizeof(buffer)) ? len : sizeof(buffer) - 1
+    );
+
+    HAL_StatusTypeDef status = HAL_UART_Transmit(
+        _huart,
+        reinterpret_cast<uint8_t*>(buffer),
+        sendLen,
+        HAL_MAX_DELAY
+    );
+
+    return (status == HAL_OK) ? len : -1;
+}
+
+
 void STM32BufferedSerial::push(uint8_t c)
 {
     uint16_t next = (_rxHead + 1) % _rxSize;

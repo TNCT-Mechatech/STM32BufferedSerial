@@ -90,6 +90,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
   serial.print("Hello\r\n");
   serial.printf("count=%d\r\n", count);
   ```
+  `print()` is not named `printf()`, and `begin()` is not required when using only blocking output.
 * Reading data:
 
   ```cpp
@@ -219,6 +220,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
   serial.print("Hello\r\n");
   serial.printf("count=%d\r\n", count);
   ```
+  `print()` は `printf()` という名前ではありません。ブロッキング送信だけを使う場合、`begin()` は不要です。
 * データ受信例：
 
   ```cpp

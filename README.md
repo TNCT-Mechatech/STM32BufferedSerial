@@ -57,7 +57,6 @@ void setup() {
     MX_USART2_UART_Init();
 
     serial.begin();
-    STM32BufferedSerial::registerInstance(&huart2, &serial);
 
     const char* msg = "STM32 Buffered Serial Example\r\n";
     serial.write(reinterpret_cast<const uint8_t*>(msg), strlen(msg));
@@ -79,14 +78,24 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
     if (auto inst = STM32BufferedSerial::fromHandle(huart))
         inst->handleTxComplete();
 }
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart) {
+    if (auto inst = STM32BufferedSerial::fromHandle(huart))
+        inst->handleError();
+}
 ```
 
 ---
 
 ### 🧠 Usage Notes
 
-* Call `STM32BufferedSerial::registerInstance()` **after** `MX_USARTx_UART_Init()`.
-* Implement `HAL_UART_RxCpltCallback()` and `HAL_UART_TxCpltCallback()` as shown.
+* Instances register automatically by UART handle pointer, including before HAL initialization.
+* Call `begin()` **after** `MX_USARTx_UART_Init()` to start reception.
+* Compile `src/source/HAL_UART_Callback_Setup.cpp` for automatic RX, TX and error dispatch.
+  If you supply your own callbacks, omit that file and forward RX/TX as shown above,
+  and forward `HAL_UART_ErrorCallback()` to `inst->handleError()` for overrun recovery.
+* Buffer sizes below 2 are rounded up to 2. Each ring holds `bufSize - 1` queued bytes.
+* `flushTx()` discards queued bytes and allows the byte already in flight to finish.
 * RX interrupt automatically restarts internally.
 * Sending data:
 
@@ -100,6 +109,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
   serial.printf("count=%d\r\n", count);
   ```
   Use `printf()`, not `print()`. `begin()` is not required when using only blocking output.
+  Long output uses a temporary heap buffer. Allocation failure, output above 65,535 bytes,
+  or a busy UART returns a negative value; output is never silently truncated.
 * Reading data:
 
   ```cpp
@@ -193,7 +204,6 @@ void setup() {
     MX_USART2_UART_Init();
 
     serial.begin();
-    STM32BufferedSerial::registerInstance(&huart2, &serial);
 
     const char* msg = "STM32 Buffered Serial Example\r\n";
     serial.write(reinterpret_cast<const uint8_t*>(msg), strlen(msg));
@@ -217,15 +227,24 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
     if (auto inst = STM32BufferedSerial::fromHandle(huart))
         inst->handleTxComplete();
 }
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart) {
+    if (auto inst = STM32BufferedSerial::fromHandle(huart))
+        inst->handleError();
+}
 ```
 
 ---
 
 ### 🧠 使用上の注意
 
-* `MX_USARTx_UART_Init()` の **後に**
-  `STM32BufferedSerial::registerInstance()` を呼び出してください。
-* HAL のコールバック関数内で `handleRxComplete()` / `handleTxComplete()` を呼び出します。
+* UART ハンドルのポインタで自動登録されるため、HAL 初期化前にインスタンスを生成できます。
+* 受信を開始する `begin()` は `MX_USARTx_UART_Init()` の **後に** 呼び出してください。
+* `src/source/HAL_UART_Callback_Setup.cpp` をビルドすると、受信・送信・エラーのコールバックが接続されます。
+  独自のコールバックを使う場合は同ファイルを除外し、上記の受信・送信処理に加えて
+  `HAL_UART_ErrorCallback()` から `inst->handleError()` を呼び出してください。
+* バッファサイズは最小 2 に補正され、各リングに保持できる待機データは `bufSize - 1` バイトです。
+* `flushTx()` は送信待ちデータを破棄し、送信中の 1 バイトは完了させます。
 * RX 割り込みは内部で自動的に再開されます。
 * データ送信例：
 
@@ -239,6 +258,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
   serial.printf("count=%d\r\n", count);
   ```
   `print()` ではなく `printf()` を使います。ブロッキング送信だけを使う場合、`begin()` は不要です。
+  長い出力には一時的なヒープ領域を使用します。確保失敗、65,535 バイト超の出力、
+  UART 使用中の場合は負の値を返し、通知なく切り捨てることはありません。
 * データ受信例：
 
   ```cpp

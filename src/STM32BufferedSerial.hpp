@@ -16,7 +16,7 @@
  * Typical usage:
  * @code
  * STM32BufferedSerial serial(&huart2, 256);
- * serial.begin();
+ * serial.begin(); // After HAL UART initialization.
  *
  * while (1) {
  *     if (serial.available()) {
@@ -38,6 +38,11 @@
  * void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
  *     if (auto inst = STM32BufferedSerial::fromHandle(huart))
  *         inst->handleTxComplete();
+ * }
+ *
+ * void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart) {
+ *     if (auto inst = STM32BufferedSerial::fromHandle(huart))
+ *         inst->handleError();
  * }
  * @endcode
  *
@@ -79,7 +84,8 @@ public:
     /**
      * @brief Construct a new STM32BufferedSerial object.
      * @param huart Pointer to HAL UART handle (e.g., &huart2)
-     * @param bufSize Size of both TX and RX buffers (default: 256 bytes)
+     * @param bufSize Size of both TX and RX buffers (default: 256 bytes, minimum: 2).
+     * Values below 2 are rounded up to 2. The usable ring capacity is bufSize - 1.
      */
     explicit STM32BufferedSerial(UART_HandleTypeDef* huart, uint16_t bufSize = 256);
 
@@ -93,7 +99,7 @@ public:
 
     /** @brief Write a single byte to TX buffer and start interrupt-driven transmission.
      *  @param data Byte to send.
-     *  @return 1 if success, -1 if TX buffer is full.
+     *  @return 1 if queued, -1 if TX buffer is full or UART is not initialized.
      */
     int write(uint8_t data);
 
@@ -108,7 +114,8 @@ public:
      * @brief Send a formatted string over UART.
      * @param format printf-style format string.
      * @param ... Format arguments.
-     * @return Number of characters formatted, or negative on error.
+     * @return Number of characters sent, or negative on format, allocation, size or UART error.
+     * @note Output longer than UINT16_MAX bytes is rejected without transmission.
      * @note Blocking transmit. May return an error internally if UART is busy.
      */
     int printf(const char* format, ...);
@@ -117,7 +124,7 @@ public:
      * @brief Send a formatted string over UART using va_list.
      * @param format printf-style format string.
      * @param args Format argument list.
-     * @return Number of characters formatted, or negative on error.
+     * @return Number of characters sent, or negative on format, allocation, size or UART error.
      * @note Blocking transmit.
      */
     int vprintf(const char* format, va_list args);
@@ -135,7 +142,7 @@ public:
     /** @brief Clear RX buffer. */
     void flushRx();
 
-    /** @brief Clear TX buffer. */
+    /** @brief Discard queued TX bytes. The byte already in flight is allowed to finish. */
     void flushTx();
 
     /** @brief Handle RX complete interrupt.
@@ -148,13 +155,16 @@ public:
      */
     void handleTxComplete();
 
+    /** @brief Re-arm reception after HAL stops it on a UART error. */
+    void handleError();
+
     /** @brief Get internal UART handle. */
     UART_HandleTypeDef* getHandle() const { return _huart; }
 
     /**
      * @brief Register a serial instance for global callback lookup.
      * @param huart UART handle.
-     * @param instance Instance pointer to register.
+     * @param instance Instance pointer to register, or nullptr to unregister.
      */
     static void registerInstance(UART_HandleTypeDef* huart, STM32BufferedSerial* instance);
 
@@ -176,9 +186,17 @@ private:
     volatile uint16_t _txHead;    /**< TX buffer write index */
     volatile uint16_t _txTail;    /**< TX buffer read index */
     uint8_t _rxTmp;               /**< Temporary byte for interrupt reception */
+    uint8_t _txTmp;               /**< Stable storage until TX completion */
+    bool _txActive;
+    bool _rxStarted;
+    bool _blockingTx;
 
     static constexpr int MAX_UARTS = 6; /**< Max number of UART instances supported */
-    static STM32BufferedSerial* instance_table_[MAX_UARTS]; /**< Global UART-to-instance map */
+    struct InstanceEntry {
+        UART_HandleTypeDef* handle;
+        STM32BufferedSerial* instance;
+    };
+    static InstanceEntry instance_table_[MAX_UARTS]; /**< Map by handle, even before HAL init */
 
     /** @brief Begin receiving via interrupt. */
     void _startRxInterrupt();

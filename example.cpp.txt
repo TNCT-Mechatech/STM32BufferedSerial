@@ -26,9 +26,6 @@ void setup() {
 
     serial.begin();
 
-    // Register instance for interrupt callbacks
-    STM32BufferedSerial::registerInstance(&huart2, &serial);
-
     // Send startup message
     const char* msg = "STM32 Buffered Serial Example\r\n";
     serial.write(reinterpret_cast<const uint8_t*>(msg), strlen(msg));
@@ -60,6 +57,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
     if (auto inst = STM32BufferedSerial::fromHandle(huart))
         inst->handleTxComplete();
+}
+
+// If using these custom callbacks, do not compile HAL_UART_Callback_Setup.cpp.
+void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart) {
+    if (auto inst = STM32BufferedSerial::fromHandle(huart))
+        inst->handleError();
 }
 
 /**
